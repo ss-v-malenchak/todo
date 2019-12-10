@@ -1,0 +1,13 @@
+runtime: python
+env: flex
+entrypoint: gunicorn -b :$PORT main:app
+
+runtime_config:
+  python_version: 3
+
+env_variables:
+  SQLALCHEMY_DATABASE_URI: >-
+    postgresql+psycopg2://postgres:postgres@/todo?host=/cloudsql/todo-261621:europe-west1:todo
+
+beta_settings:
+  cloud_sql_instances: todo-261621:europe-west1:todo
