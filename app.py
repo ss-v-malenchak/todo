@@ -1,43 +1,33 @@
 import os
-from flask import Flask, request, render_template, redirect, url_for
-from flask_sqlalchemy import SQLAlchemy
+
+from flask import Flask
+import psycopg2
+
+db_user = os.environ.get('CLOUD_SQL_USERNAME')
+db_password = os.environ.get('CLOUD_SQL_PASSWORD')
+db_name = os.environ.get('CLOUD_SQL_DATABASE_NAME')
+db_connection_name = os.environ.get('CLOUD_SQL_CONNECTION_NAME')
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['SQLALCHEMY_DATABASE_URI']
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-db = SQLAlchemy(app)
-
-
-class Todo(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    text = db.Column(db.String(200))
-    complete = db.Column(db.Boolean)
-
 
 @app.route('/')
-def index():
-    incomplete = Todo.query.filter_by(complete=False).all()
-    complete = Todo.query.filter_by(complete=True).all()
-    return render_template('index.html', incomplete=incomplete,
-                           complete=complete)
+def main():
+    if os.environ.get('GAE_ENV') == 'standard':
+        host = '/cloudsql/{}'.format(db_connection_name)
+    else:
+        host = '127.0.0.1'
 
+    cnx = psycopg2.connect(dbname=db_name, user=db_user,
+                           password=db_password, host=host)
+    with cnx.cursor() as cursor:
+        cursor.execute('SELECT NOW() as now;')
+        result = cursor.fetchall()
+    current_time = result[0][0]
+    cnx.commit()
+    cnx.close()
 
-@app.route('/add', methods=['POST'])
-def add():
-    todo = Todo(text=request.form['todoitem'], complete=False)
-    db.session.add(todo)
-    db.session.commit()
-    return redirect(url_for('index'))
-
-
-@app.route('/complete/<id>')
-def complete(id):
-    todo = Todo.query.filter_by(id=int(id)).first()
-    todo.complete = True
-    db.session.commit()
-    return redirect(url_for('index'))
+    return str(current_time)
 
 
 if __name__ == '__main__':
