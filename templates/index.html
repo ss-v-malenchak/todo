@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Todo List</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='main.css')}}">
+</head>
+<body>
+<div class="container">
+    <h1 class="text-center">Todo List</h1>
+    <div class="p-3">
+        <h2 class="text-center">Add a new todo item:</h2>
+        <form class="form-row align-items-center" action="{{ url_for('add') }}" method="POST">
+            <div class="col-10">
+                <input class="form-control" type="text" name="todoitem">
+            </div>
+            <div class="col-2">
+                <input class="btn btn-primary text-center m-3" type="submit" value="Add Item" class="button">
+            </div>
+        </form>
+    </div>
+    <div>
+        <h2 class="text-center">Incomplete Items</h2>
+        <div class="alert alert-danger w-100" role="alert">
+            <ul>
+                {% for todo in incomplete %}
+                    <li>{{ todo.text }} <a href="{{ url_for('complete', id=todo.id) }}">Mark As Complete</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+        <h2>Completed Items</h2>
+        <div class="alert alert-success w-100" role="alert">
+            <ul>
+                {% for todo in complete %}
+                <li>{{ todo.text }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
